@@ -3,6 +3,9 @@ int lifeTime = 100;
 String[] sentences;
 int sentIX = 0;//sentence index
 float dropS = 0.05;//drop down speed
+float hideX;//hide text by x value
+float targetHX;//hide X target
+float hideS = 0.1;//hide speed
 
 Sentence sentence;
 
@@ -26,7 +29,7 @@ void draw(){
     sentIX++;
   }
   fill(0);
-  rect(0, height/2+textS/2, width, height);//hide below ground
+  rect(0, 0, hideX, height);
 }
 
 void keyPressed(){
