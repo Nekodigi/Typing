@@ -1,17 +1,26 @@
 float noiseS = 100;
 float noiseP = 1;
+float textS = 25;
+String[] sentences;
+int sentIX = 0;//sentence index
 
 Sentence sentence;
 
 void setup(){
-  size(500, 500);
-  sentence = new Sentence("Nekodigi!?", width/2, height/2, 100);
+  size(1000, 500);
+  sentences = loadStrings("THE CHEMICAL HISTORY OF A CANDLE.txt");
+  sentence = new Sentence(sentences[sentIX], width/2, height/2, textS);
+  sentIX++;
 }
 
 void draw(){
   background(0);
   sentence.update();
   sentence.show();
+  if(sentence.end()){
+    sentence = new Sentence(sentences[sentIX], width/2, height/2, textS);
+    sentIX++;
+  }
 }
 
 void keyPressed(){
@@ -50,6 +59,10 @@ class Sentence{
       chars.get(charIX).broken = true;
       charIX++;
     }
+  }
+  
+  boolean end(){
+    return charIX >= text.length();
   }
   
   void update(){

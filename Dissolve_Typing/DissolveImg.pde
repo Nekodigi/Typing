@@ -1,4 +1,4 @@
-class DisolveImg{
+class DissolveImg{
   PImage img;
   PVector imgOff;
   int lifeTime;
@@ -7,7 +7,7 @@ class DisolveImg{
   float noiseP;
   ArrayList<Particle> particles = new ArrayList<Particle>();
 //                                                                                 sampling interval if pixel is black, dont create particle
-  DisolveImg(PVector imgOff, PImage img, int lifeTime, float noiseS, float noiseP, int sampItv, boolean blackAsNone){
+  DissolveImg(PVector imgOff, PImage img, int lifeTime, float noiseS, float noiseP, int sampItv, boolean blackAsNone){
     this.imgOff = imgOff;
     this.img = img;
     this.lifeTime = lifeTime;
