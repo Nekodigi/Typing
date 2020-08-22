@@ -8,6 +8,7 @@ int lifeTime = 100;
 String[] sentences;
 int sentIX = 0;//sentence index
 float dropS = 0.05;//drop down speed
+float g = 20;//40 gravity
 
 Box2DProcessing box2d;
 
@@ -18,7 +19,7 @@ void setup(){
   size(2000, 1000);//             please set alpha range 100
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
-  box2d.setGravity(0, -10);
+  box2d.setGravity(0, -g);
   PolygonShape sd = new PolygonShape();
   float box2dW = box2d.scalarPixelsToWorld(width/2);//origin center?
   float box2dH = box2d.scalarPixelsToWorld(10/2);
