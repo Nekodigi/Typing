@@ -19,10 +19,14 @@ class Sentence{
     chars = new ArrayList<CharObj>();
     float xoff = 0;
     textSize(textS);
+    CharObj prevObj = null;
     for(int i=0; i<text.length(); i++){
       char c = text.charAt(i);
-      chars.add(new CharObj(pos.x + xoff, pos.y, c, textS, lifeTime));
+      CharObj charObj = new CharObj(pos.x + xoff, pos.y, c, textS, lifeTime, prevObj);
+      if(prevObj != null)prevObj.nextObj = charObj;
+      chars.add(charObj);
       xoff += textWidth(c);
+      prevObj = charObj;
     }
   }
   
@@ -33,7 +37,7 @@ class Sentence{
   void onType(char target){
     char c = text.charAt(charIX);
     if(c == target){
-      chars.get(charIX).dissolve();
+      chars.get(charIX).onType();
       charIX++;
     }
   }
@@ -56,6 +60,8 @@ class Sentence{
 }
 
 class CharObj{
+  CharObj prevObj;
+  CharObj nextObj;
   PVector pos;
   float textS, textW;
   char cha;
@@ -64,16 +70,40 @@ class CharObj{
   boolean typed = false;
   Body body;
   
-  CharObj(float x, float y, char cha, float textS, int lifeTime){
+  CharObj(float x, float y, char cha, float textS, int lifeTime, CharObj prevObj){
     this.pos = new PVector(x, y);
     this.cha = cha;
     this.textS = textS;
     textSize(textS);
     this.textW = textWidth(cha);
     this.lifeTime = lifeTime;
+    this.prevObj = prevObj;
+    
+    PolygonShape sd = new PolygonShape();
+    float box2dW = box2d.scalarPixelsToWorld(textW/2);
+    float box2dH = box2d.scalarPixelsToWorld(textS/2);
+    sd.setAsBox(box2dW, box2dH);
+    // Define a fixture
+    FixtureDef fd = new FixtureDef();
+    fd.shape = sd;
+    // Parameters that affect physics
+    fd.density = 1;
+    fd.friction = 0.3;
+    fd.restitution = 0.5;
+
+    // Define the body and make it from the shape
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.STATIC;
+    bd.position.set(box2d.coordPixelsToWorld(pos.x+textW/2, pos.y+textS/2));
+
+    body = box2d.createBody(bd);
+    body.createFixture(fd);
+    // Give it some initial random velocity
+    
   }
   
   void onType(){
+    box2d.destroyBody(body);
     PolygonShape sd = new PolygonShape();
     float box2dW = box2d.scalarPixelsToWorld(textW/2);
     float box2dH = box2d.scalarPixelsToWorld(textS/2);
@@ -93,12 +123,43 @@ class CharObj{
 
     body = box2d.createBody(bd);
     body.createFixture(fd);
-
     // Give it some initial random velocity
     body.setLinearVelocity(new Vec2(random(-5, 0), random(2, 5)));
     body.setAngularVelocity(random(-5, 5));
     
     typed = true;
+    if(nextObj != null){
+      DistanceJointDef djd = new DistanceJointDef();
+     // Connection between previous particle and this one
+     djd.bodyA = nextObj.body;
+     djd.bodyB = body;
+     // Equilibrium length
+     float len = PVector.dist(nextObj.pos, pos);
+     djd.length = box2d.scalarPixelsToWorld(textW);
+     // These properties affect how springy the joint is 
+     djd.frequencyHz = 0;
+     djd.dampingRatio = 0;
+     
+     // Make the joint.  Note we aren't storing a reference to the joint ourselves anywhere!
+     // We might need to someday, but for now it's ok
+     DistanceJoint dj = (DistanceJoint) box2d.world.createJoint(djd);
+    }
+    if(prevObj != null){
+      DistanceJointDef djd = new DistanceJointDef();
+     // Connection between previous particle and this one
+     djd.bodyA = prevObj.body;
+     djd.bodyB = body;
+     // Equilibrium length
+     float len = PVector.dist(prevObj.pos, pos);
+     djd.length = box2d.scalarPixelsToWorld(textW);
+     // These properties affect how springy the joint is 
+     djd.frequencyHz = 0;
+     djd.dampingRatio = 0;
+     
+     // Make the joint.  Note we aren't storing a reference to the joint ourselves anywhere!
+     // We might need to someday, but for now it's ok
+     DistanceJoint dj = (DistanceJoint) box2d.world.createJoint(djd);
+    }
   }
   
   void update(){
